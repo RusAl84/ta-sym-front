@@ -4,7 +4,7 @@
       <div class="flexrow">
         <div>
           <q-card-section>
-            <div class="text-h6">оценки схожести текстов с целью установления авторства:</div>
+            <div class="text-h6">Оценка схожести текстов с целью установления авторства:</div>
           </q-card-section>
           <q-input
             class="inputtext"
@@ -13,32 +13,28 @@
             autogrow
             float-label="Введите текст для анализа"
           />
-          <q-card-section>
-            <q-btn color="primary" label="Поиск" @click="onProc" />
-          </q-card-section>
-        </div></div
-    ></q-card>
-    <q-card class="chatmessages">
-      <div class="flexrow">
-        <div>
-          <q-card-section>
-            <div class="text-h6">
-              Найденные целевые сообщения:
+          <q-card-section class="q-gutter-lg">
+            <div>
+            <q-btn color="primary" label="Поиск схожих текстов" @click="onFindCL" />
+          </div>
+            <div>
+              <q-select
+                filled
+                v-model="counts"
+                :options="options"
+                label="Нечеткость"
+              />
             </div>
           </q-card-section>
-          <q-card-section class="q-gutter-lg">
-            <q-btn color="primary" label="Поиск" @click="onFindCL" />
-          </q-card-section>
-        </div>
-      </div>
-      <q-card-section v-if="ae_data.length > 0">
+          <q-card-section v-if="ae_data.length > 0">
         <div v-for="(line, i) in ae_data" :key="i">
           <div>
             <b>Найденный фрагмент &nbsp; {{ i + 1 }}</b>
           </div>
-          <div><b>Исходный текст сообщения:</b> {{ line.text }}</div>
+          <div><b>Текст фрагмента:</b> {{ line.text }}</div>
           <br />
-        </div> </q-card-section
+        </div> </q-card-section>
+        </div></div
     ></q-card>
     <q-card class="chatmessages">
       <div class="flexrow">
@@ -172,8 +168,8 @@
               flat
               bordered
               single
-              @uploaded="fileUploadedm"
-              accept="* /.model"
+              @uploaded="fileUploadedM"
+              accept=".model, semanticModel/*"
               style="min-width: 900px; max-width: 900px"
             />
           </q-card-section>
@@ -186,16 +182,16 @@
 <script>
 import { defineComponent, ref } from "vue";
 import axios from "axios";
-import * as cfg from "../config.js";
 
 export default {
   data() {
     return {
       file: "",
-      hostae: cfg.hostae,
-      hostae_uploadae: cfg.hostae_uploadae,
+      hostae: ref("http://192.168.3.70:5000/"),
+      hostae_uploadae: ref("http://192.168.3.70:5000/uploadae"),
       hostae_uploadaem: ref("http://192.168.3.70:5000/uploadaem"),
       chatmessages: "",
+      counts: ref(2),
       proc_text: ref(""),
       ttype: ref(""),
       resp_text: ref(""),
@@ -203,7 +199,7 @@ export default {
       all_data: ref([{}]),
       ae_data: ref([{}]),
       filename: ref(""),
-      options: ["RAKE", "YAKE", "BERT"],
+      options: [1, 2, 3, 4, 5],
     };
   },
   methods: {
@@ -216,6 +212,7 @@ export default {
       this.filename = data["filename"];
     },
     fileUploadedM({ files, xhr }) {
+      let data = JSON.parse(xhr.response);
       console.log('Model Uploaded');
     },
     async onProc() {
@@ -263,7 +260,7 @@ export default {
         url: cfg.hostae + "findae",
         data: {
           filename: this.filename,
-          type: this.ttype,
+          text: this.proc_text,
         },
         headers: {
           "Content-Type": "application/json",
